@@ -32,6 +32,17 @@ Open the HTML file in any modern browser. Pick one of the built-in examples (inv
 
 Nothing is uploaded anywhere. The entire tool, including the symbol library and the layout engine, runs locally in the page.
 
+## Command line
+
+For batch conversion and to reproduce the benchmarks, see [`cli/`](cli/), a Node.js
+tool that runs the same conversion engine. It converts a whole folder of netlists at
+once and verifies each result:
+
+    node weave.js batch ./netlists results.tsv
+
+See [`cli/README.md`](cli/README.md) for setup and [`cli/BENCHMARK.md`](cli/BENCHMARK.md)
+for the head-to-head comparison against Schemato on the Circuits-LTSpice test set.
+
 ## Known limits
 
 Very dense multi-pin power modules (large `LTM`/`LTC` regulators with many repeated nets) are the one class Weave does not yet lay out cleanly; these produce a partial result that needs manual fixup. Text labels can occasionally overlap a nearby wire in the drawing; this is cosmetic, does not affect connectivity, and is a one-drag fix in LTspice. Parts newer than your installed LTspice version will not be in the symbol table.

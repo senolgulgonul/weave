@@ -48,7 +48,7 @@ async function main() {
     const nl = readText(a1);
     const { asc, errs, mode } = await convertBest(nl);
     if (a2) {
-      fs.writeFileSync(a2, asc);
+      fs.writeFileSync(a2, Buffer.from(asc, 'latin1'));
       const tag = errs.length ? `partial: ${errs.length} net(s) need manual fixup` : 'MATCH (round-trip verified)';
       console.error(`wrote ${a2} — ${tag} [mode ${mode}]`);
     } else {

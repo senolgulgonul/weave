@@ -1,0 +1,19 @@
+{
+  "name": "weave-cli",
+  "version": "1.0.0",
+  "description": "SPICE netlist to LTspice .asc converter with round-trip connectivity verification. Command-line companion to the browser tool at senolgulgonul.github.io/weave.",
+  "bin": {
+    "weave": "weave.js"
+  },
+  "main": "core.js",
+  "scripts": {
+    "convert": "node weave.js convert",
+    "batch": "node weave.js batch"
+  },
+  "dependencies": {
+    "elkjs": "^0.9.3"
+  },
+  "license": "MIT",
+  "author": "Senol Gulgonul",
+  "homepage": "https://senolgulgonul.github.io/weave"
+}

@@ -7997,7 +7997,7 @@ function compare(nlText, ascText){
 /* weave-asc UI v1.4: viewer removed. Convert, verify, download.
    Core (convert) and verifier (compare) injected at build time from CLI sources. */
 
-const APP_VERSION='2.6';
+const APP_VERSION='2.7';
 
 const EXAMPLES = {
   'OP27 inverting amplifier': `* OP27 inverting amplifier, gain -10
@@ -8122,7 +8122,10 @@ function download(){
   if(!lastAsc) return;
   const d=new Date(), p2=n=>String(n).padStart(2,'0');
   const stamp=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+p2(d.getHours())+p2(d.getMinutes());
-  const b=new Blob([lastAsc],{type:'text/plain'});
+  // write as latin-1 bytes so LTspice (ANSI) shows values like 100µ correctly
+  const bytes=new Uint8Array(lastAsc.length);
+  for(let i=0;i<lastAsc.length;i++){const c=lastAsc.charCodeAt(i); bytes[i]=c<256?c:63;}
+  const b=new Blob([bytes],{type:'application/octet-stream'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(b); a.download='schematic_'+stamp+'.asc'; a.click();
   URL.revokeObjectURL(a.href);

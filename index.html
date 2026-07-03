@@ -3,27 +3,57 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>weave-asc: SPICE netlist to LTspice schematic</title>
 <style>
-body{font:14px/1.4 system-ui,sans-serif;margin:0;background:#f4f4ef;color:#222}
-header{padding:10px 16px;background:#20303f;color:#eee;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font:14px/1.4 system-ui,sans-serif;margin:0;background:#f4f4ef;color:#222;display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 16px;background:#20303f;color:#eee;display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex:0 0 auto}
 header h1{font-size:16px;margin:0;font-weight:600}
 #ver{font-size:12px;color:#ffd479;font-weight:600}
-header span{font-size:12px;color:#9db}
-main{display:flex;flex-direction:column;gap:8px;padding:12px;height:calc(100vh - 62px);box-sizing:border-box;max-width:900px;margin:0 auto}
-textarea{flex:1;font:13px/1.45 ui-monospace,monospace;border:1px solid #ccc;border-radius:6px;padding:10px;resize:none;background:#fff}
-.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header .sub{font-size:12px;color:#9db}
+.toolbar{flex:0 0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#e9e9e3;border-bottom:1px solid #d0d0c8}
+.toolbar .spacer{flex:1}
 button,select{font:13px system-ui;padding:6px 12px;border:1px solid #888;border-radius:6px;background:#fff;cursor:pointer}
 button:hover{background:#eee}
 button:disabled{opacity:.45;cursor:default}
-#status{font:12px ui-monospace,monospace;padding:2px 8px;border-radius:4px}
-#info,#nsym{font-size:12px;color:#889}
+#status{font:12px ui-monospace,monospace;padding:3px 10px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
+#info{font-size:12px;color:#667}
 .ok{background:#d7efd7;color:#1a5c1a}.warn{background:#fdf0d0;color:#8a5a00}.bad{background:#f6d7d7;color:#7c1a1a}
+/* workspace: top row (two columns) + bottom console; rows split by a horizontal gutter */
+#workspace{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+#toprow{display:flex;min-height:0;flex:1 1 auto}
+.pane{display:flex;flex-direction:column;min-width:0;min-height:0}
+.pane>.label{font:11px ui-monospace,monospace;color:#889;padding:4px 10px;background:#efefe9;border-bottom:1px solid #e0e0d8;flex:0 0 auto;letter-spacing:.05em;text-transform:uppercase}
+#leftpane{flex:1 1 50%}
+#rightpane{flex:1 1 50%}
+textarea,#ascview{flex:1 1 auto;font:12.5px/1.5 ui-monospace,monospace;border:0;padding:10px;background:#fff;overflow:auto;min-height:0;width:100%}
+textarea{resize:none}
+#ascview{white-space:pre;color:#20303f;margin:0}
+#console{flex:0 0 auto;height:80px;background:#1b2530;color:#cdd6e0;font:12px/1.5 ui-monospace,monospace;overflow:auto;padding:6px 10px;min-height:24px}
+#console .l-ok{color:#8fdf9f}#console .l-warn{color:#ffce7a}#console .l-err{color:#ff9a9a}#console .l-dim{color:#7d8b9a}
+.vgutter{flex:0 0 6px;cursor:col-resize;background:#d6d6ce}
+.vgutter:hover{background:#b9c4b0}
+.hgutter{flex:0 0 6px;cursor:row-resize;background:#d6d6ce}
+.hgutter:hover{background:#b9c4b0}
 </style></head><body>
-<header><h1>weave-asc</h1><span id="ver"></span><span>SPICE netlist &rarr; LTspice .asc &middot; elkjs layout &middot; fully client-side &middot; connectivity verified on every run</span><span id="nsym"></span></header>
-<main>
-<div class="bar"><select id="ex"></select><button id="go">Convert</button></div>
-<textarea id="nl" spellcheck="false"></textarea>
-<div class="bar"><span id="status"></span><span id="info"></span><button id="dl">Download .asc</button></div>
-</main>
+<header><h1>weave</h1><span id="ver"></span><span class="sub">SPICE netlist &rarr; LTspice .asc &middot; elkjs layout &middot; fully client-side</span></header>
+<div class="toolbar">
+  <select id="ex"></select>
+  <button id="go">Convert</button>
+  <button id="dl">Download .asc</button>
+  <span id="status"></span>
+  <span class="spacer"></span>
+  <span id="info"></span>
+  <span id="nsym"></span>
+</div>
+<div id="workspace">
+  <div id="toprow">
+    <div class="pane" id="leftpane"><div class="label">netlist (input)</div><textarea id="nl" spellcheck="false"></textarea></div>
+    <div class="vgutter" id="vgut"></div>
+    <div class="pane" id="rightpane"><div class="label">schematic (.asc output)</div><pre id="ascview"></pre></div>
+  </div>
+  <div class="hgutter" id="hgut"></div>
+  <pre id="console"></pre>
+</div>
 <script>(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ELK = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
@@ -7967,7 +7997,7 @@ function compare(nlText, ascText){
 /* weave-asc UI v1.4: viewer removed. Convert, verify, download.
    Core (convert) and verifier (compare) injected at build time from CLI sources. */
 
-const APP_VERSION='2.5';
+const APP_VERSION='2.6';
 
 const EXAMPLES = {
   'OP27 inverting amplifier': `* OP27 inverting amplifier, gain -10
@@ -8041,6 +8071,15 @@ R3 inm out 1
 };
 
 let lastAsc='';
+function clog(msg, cls){
+  const c=document.getElementById('console');
+  const line=document.createElement('div');
+  if(cls) line.className='l-'+cls;
+  const t=new Date().toTimeString().slice(0,8);
+  line.textContent='['+t+'] '+msg;
+  c.appendChild(line);
+  c.scrollTop=c.scrollHeight;
+}
 async function run(){
   const src=document.getElementById('nl').value;
   const status=document.getElementById('status');
@@ -8060,15 +8099,23 @@ async function run(){
     const nSym=(lastAsc.match(/^SYMBOL /gm)||[]).length;
     const nWire=(lastAsc.match(/^WIRE /gm)||[]).length;
     info.textContent=`${nSym} symbols, ${nWire} wires`;
+    document.getElementById('ascview').textContent=lastAsc;
     if(errs.length){
-      status.textContent=`partial: ${errs.length} net(s) need manual fixup in LTspice (download still available)`;
+      status.textContent=`partial: ${errs.length} net(s) need manual fixup`;
       status.className='warn';
+      clog(`converted with ${errs.length} unmatched net(s) — schematic is still usable, download enabled`,'warn');
+      errs.slice(0,8).forEach(e=>clog('  '+e,'dim'));
+      if(errs.length>8) clog(`  ...and ${errs.length-8} more`,'dim');
     } else {
       status.textContent='round-trip verified: MATCH';
       status.className='ok';
+      clog(`MATCH — ${nSym} symbols, ${nWire} wires, connectivity verified`,'ok');
     }
-  }catch(e){ status.textContent='error: '+e.message; status.className='bad'; info.textContent=''; lastAsc=''; }
-  // download stays enabled whenever any schematic was produced, MATCH or not
+  }catch(e){
+    status.textContent='error: '+e.message; status.className='bad'; info.textContent=''; lastAsc='';
+    document.getElementById('ascview').textContent='';
+    clog('error: '+e.message,'err');
+  }
   document.getElementById('dl').disabled=!lastAsc;
 }
 function download(){
@@ -8092,6 +8139,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if (sel.value==='New (clear)'){
       lastAsc='';
       document.getElementById('nl').value='';
+      document.getElementById('ascview').textContent='';
       document.getElementById('info').textContent='';
       document.getElementById('dl').disabled=true;
       const st=document.getElementById('status'); st.textContent=''; st.className='';
@@ -8105,6 +8153,34 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('go').onclick=run;
   document.getElementById('dl').onclick=download;
   let t; document.getElementById('nl').addEventListener('input',()=>{clearTimeout(t);t=setTimeout(run,500);});
+
+  // vertical gutter: resize left/right panes
+  (function(){
+    const g=document.getElementById('vgut'), L=document.getElementById('leftpane'), R=document.getElementById('rightpane'), row=document.getElementById('toprow');
+    let drag=false;
+    g.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
+    window.addEventListener('mousemove',e=>{
+      if(!drag)return;
+      const r=row.getBoundingClientRect();
+      let f=(e.clientX-r.left)/r.width; f=Math.max(0.15,Math.min(0.85,f));
+      L.style.flex='0 0 '+(f*100)+'%'; R.style.flex='1 1 auto';
+    });
+    window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});
+  })();
+  // horizontal gutter: resize console height
+  (function(){
+    const g=document.getElementById('hgut'), C=document.getElementById('console'), ws=document.getElementById('workspace');
+    let drag=false;
+    g.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
+    window.addEventListener('mousemove',e=>{
+      if(!drag)return;
+      const r=ws.getBoundingClientRect();
+      let h=r.bottom-e.clientY; h=Math.max(24,Math.min(r.height-120,h));
+      C.style.height=h+'px';
+    });
+    window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});
+  })();
+  clog('weave ready — '+Object.keys(SYMBOLS).length+' symbols loaded','dim');
   run();
 });
 

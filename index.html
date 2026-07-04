@@ -6801,7 +6801,7 @@ function parseNetlist(text){
     } else if (P==='T'){
       // lossless transmission line: 4 nodes then params
       const nets=tok.slice(1,5);
-      comps.push({ name, sym:'ltline', nets, value: tok.slice(5).join(' ') });
+      comps.push({ name, sym:'tline', nets, value: tok.slice(5).join(' ') });
     } else if (P==='K'){
       directives.push(ln);   // coupling statement is schematic text
       continue;
@@ -7997,7 +7997,7 @@ function compare(nlText, ascText){
 /* weave-asc UI v1.4: viewer removed. Convert, verify, download.
    Core (convert) and verifier (compare) injected at build time from CLI sources. */
 
-const APP_VERSION='2.8';
+const APP_VERSION='2.9';
 
 const EXAMPLES = {
   'OP27 inverting amplifier': `* OP27 inverting amplifier, gain -10

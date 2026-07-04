@@ -90,7 +90,7 @@ function parseNetlist(text){
   for (let i=0;i<joined.length;i++){
     let ln = joined[i].trim();
     if (!ln || ln.startsWith('*') || ln.startsWith(';')) continue;
-    if (i===0 && !/^[.RCLVIX]/i.test(ln[0])) continue; // title line safety
+    if (i===0 && !/^[.;*RCLVIDQMJXEGFHBSWTKA]/i.test(ln[0])) continue; // title line safety: skip only if it looks like no supported element/directive
     if (ln.startsWith('.')){
       if (!/^\.end\b/i.test(ln)) directives.push(ln);
       continue;

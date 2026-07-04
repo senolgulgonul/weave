@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>weave-asc: SPICE netlist to LTspice schematic</title>
+<title>Weave: SPICE netlist to LTspice schematic</title>
 <style>
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -6738,7 +6738,7 @@ function parseNetlist(text){
   for (let i=0;i<joined.length;i++){
     let ln = joined[i].trim();
     if (!ln || ln.startsWith('*') || ln.startsWith(';')) continue;
-    if (i===0 && !/^[.RCLVIX]/i.test(ln[0])) continue; // title line safety
+    if (i===0 && !/^[.;*RCLVIDQMJXEGFHBSWTKA]/i.test(ln[0])) continue; // title line safety: skip only if it looks like no supported element/directive
     if (ln.startsWith('.')){
       if (!/^\.end\b/i.test(ln)) directives.push(ln);
       continue;
@@ -7997,7 +7997,7 @@ function compare(nlText, ascText){
 /* weave-asc UI v1.4: viewer removed. Convert, verify, download.
    Core (convert) and verifier (compare) injected at build time from CLI sources. */
 
-const APP_VERSION='2.7';
+const APP_VERSION='2.8';
 
 const EXAMPLES = {
   'OP27 inverting amplifier': `* OP27 inverting amplifier, gain -10

@@ -153,7 +153,7 @@ function parseNetlist(text){
     } else if (P==='T'){
       // lossless transmission line: 4 nodes then params
       const nets=tok.slice(1,5);
-      comps.push({ name, sym:'ltline', nets, value: tok.slice(5).join(' ') });
+      comps.push({ name, sym:'tline', nets, value: tok.slice(5).join(' ') });
     } else if (P==='K'){
       directives.push(ln);   // coupling statement is schematic text
       continue;

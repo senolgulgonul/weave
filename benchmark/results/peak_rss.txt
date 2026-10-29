@@ -1,0 +1,4 @@
+Peak resident set size of the single-threaded Node.js process, sampled after each circuit
+(weave_bench.js, Intel i7-1165G7, 16 GB RAM, Windows, Node.js 24), release v1.3.1:
+circuits_ltspice_117  full ladder 287 MB   ELK-only 219 MB   rung 0 only 210 MB
+adi_demo_3460         full ladder 440 MB   ELK-only 327 MB   rung 0 only 402 MB

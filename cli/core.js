@@ -2,6 +2,7 @@
 // Pin tables verified against evenator/LTSpice-Libraries sym/*.asy (fetched 2026-07-02)
 'use strict';
 const ELK = require('elkjs');
+const {repairContacts} = require('./contact_guard.js');
 const GRID = 16;
 
 // ---------- symbol library (generated from real .asy files) ----------
@@ -1314,14 +1315,16 @@ async function convert(text, opts){
       if (t!=='gnd' && t!=='rail') return;
       if (!c.abs) throw new Error(c.name+': component was never placed (internal)');
       const [px,py]=c.abs[i];
-      if (c.isLeg){ flags.push([px,py, t==='gnd' ? '0' : railLabel(n,comps)]); return; }
+      if (c.isLeg){ flags.push([px,py, t==='gnd' ? '0' : railLabel(n,comps), n]); return; }
       const d = c.flagDir[i] || [0,1];
       const L = d[0]!==0 ? 64 : 32;   // horizontal stubs longer: clear the labels
       const ex = px + d[0]*L, ey = py + d[1]*32;
-      wires.push([px,py,ex,ey, 'FLAG:'+(t==='gnd'?'0':railLabel(n,comps))]);
-      flags.push([ex,ey, t==='gnd' ? '0' : railLabel(n,comps)]);
+      wires.push([px,py,ex,ey, n]);
+      flags.push([ex,ey, t==='gnd' ? '0' : railLabel(n,comps), n]);
     });
   }
+
+  repairContacts(wires, comps, flags, GRID);
 
   // emit .asc
   const L=['Version 4','SHEET 1 1200 800'];

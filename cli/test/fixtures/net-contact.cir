@@ -1,0 +1,9 @@
+* Repeated pins and independent escape nets around a generic block
+XU1 ctl out ina vn 0 0 0 vl vl 0 0 vl vp timing cal mode GENERIC_BLOCK
+R1 vp vl 2k
+R3 ctl 0 27k
+R4 timing 0 27k
+R5 cal 0 27k
+R7 out 0 1Meg
+R9 fast2 timing 1k
+.end
